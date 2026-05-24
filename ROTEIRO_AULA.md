@@ -1,5 +1,4 @@
 # Aula: Docker Compose na Prática
-## Sistema de Pedidos — Lanchonete do Zé
 
 ---
 
