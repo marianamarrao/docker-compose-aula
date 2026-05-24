@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+
+  db:
+    image:
+    environment:
+    volumes:
+    healthcheck:
+
+  backend:
+    build:
+    ports:
+    environment:
+    depends_on:
+
+  frontend:
+    build:
+    ports:
+    depends_on:
+
+volumes:
+  dados_postgres:

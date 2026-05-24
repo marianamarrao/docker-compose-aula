@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍔 Lanchonete do Zé</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1d27;
+      border-bottom: 2px solid #f59e0b;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    header h1 { font-size: 1.5rem; color: #f59e0b; }
+    header span { font-size: 1.4rem; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 700px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    section { display: flex; flex-direction: column; gap: 1rem; }
+
+    h2 {
+      font-size: 1.1rem;
+      color: #f59e0b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #2a2d3a;
+      padding-bottom: 0.5rem;
+    }
+
+    /* ── CARDÁPIO ── */
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .card:hover { border-color: #f59e0b; transform: translateY(-2px); }
+    .card.selected { border-color: #f59e0b; background: #1f2235; }
+
+    .card-top { display: flex; justify-content: space-between; align-items: center; }
+    .card-nome { font-weight: 600; font-size: 1rem; }
+    .card-preco { color: #4ade80; font-weight: 700; font-size: 1rem; }
+    .card-desc { margin-top: 0.3rem; font-size: 0.85rem; color: #888; }
+
+    /* ── FORMULÁRIO ── */
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.85rem; color: #aaa; }
+
+    input[type="text"] {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: #f59e0b; }
+
+    .selected-item {
+      background: #1f2235;
+      border: 1px solid #f59e0b;
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+      color: #f59e0b;
+      min-height: 2.4rem;
+    }
+
+    button {
+      background: #f59e0b;
+      color: #0f1117;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #d97706; }
+    button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+    /* ── PEDIDOS ── */
+    .pedidos-lista { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .pedido {
+      background: #1a1d27;
+      border: 1px solid #2a2d3a;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .pedido-info { display: flex; flex-direction: column; gap: 0.2rem; }
+    .pedido-cliente { font-weight: 600; font-size: 0.95rem; }
+    .pedido-item { font-size: 0.85rem; color: #aaa; }
+    .pedido-hora { font-size: 0.75rem; color: #555; }
+
+    .badge {
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge.pendente { background: #422006; color: #fb923c; }
+    .badge.preparando { background: #1e3a5f; color: #60a5fa; }
+    .badge.pronto { background: #14532d; color: #4ade80; }
+
+    .btn-status {
+      background: #2a2d3a;
+      color: #aaa;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 6px;
+    }
+    .btn-status:hover { background: #3a3d4a; color: #fff; }
+
+    .empty { color: #555; font-size: 0.9rem; text-align: center; padding: 2rem 0; }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #4ade80;
+      color: #0f1117;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>🍔</span>
+  <h1>Lanchonete</h1>
+</header>
+
+<div class="container">
+
+  <!-- ESQUERDA: Cardápio + Fazer Pedido -->
+  <section>
+    <h2>📋 Cardápio</h2>
+    <div id="cardapio">
+      <p class="empty">Carregando cardápio...</p>
+    </div>
+
+    <h2>🛒 Fazer Pedido</h2>
+    <div class="form-group">
+      <label>Seu nome</label>
+      <input type="text" id="cliente" placeholder="Ex: João Silva" />
+    </div>
+    <div class="form-group">
+      <label>Item selecionado</label>
+      <div class="selected-item" id="item-selecionado">Clique em um item do cardápio</div>
+    </div>
+    <button id="btn-pedir" disabled onclick="fazerPedido()">Fazer Pedido</button>
+  </section>
+
+  <!-- DIREITA: Pedidos -->
+  <section>
+    <h2>🧾 Pedidos <span id="contador" style="color:#555;font-size:0.85rem;font-weight:400"></span></h2>
+    <div class="pedidos-lista" id="pedidos">
+      <p class="empty">Nenhum pedido ainda.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // A URL da API vem do backend — em produção viria de uma variável de ambiente
+  // Em dev com Compose, o browser acessa via localhost (não pelo nome do serviço)
+  const API = "http://localhost:8080";
+
+  let itemSelecionado = null;
+
+  // ── CARDÁPIO ──────────────────────────────────────────────────────────────
+  async function carregarCardapio() {
+    try {
+      const res = await fetch(`${API}/cardapio`);
+      const itens = await res.json();
+      const el = document.getElementById("cardapio");
+      el.innerHTML = itens.map(item => `
+        <div class="card" id="card-${item.id}" onclick="selecionarItem(${item.id}, '${item.nome}', '${item.preco}')">
+          <div class="card-top">
+            <span class="card-nome">${item.nome}</span>
+            <span class="card-preco">R$ ${parseFloat(item.preco).toFixed(2)}</span>
+          </div>
+          <div class="card-desc">${item.descricao}</div>
+        </div>
+      `).join("");
+    } catch (e) {
+      document.getElementById("cardapio").innerHTML =
+        '<p class="empty">❌ Não foi possível conectar ao backend.</p>';
+    }
+  }
+
+  function selecionarItem(id, nome, preco) {
+    document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+    document.getElementById(`card-${id}`).classList.add("selected");
+    itemSelecionado = { id, nome };
+    document.getElementById("item-selecionado").textContent = `${nome} — R$ ${parseFloat(preco).toFixed(2)}`;
+    atualizarBotao();
+  }
+
+  function atualizarBotao() {
+    const cliente = document.getElementById("cliente").value.trim();
+    document.getElementById("btn-pedir").disabled = !cliente || !itemSelecionado;
+  }
+
+  document.getElementById("cliente").addEventListener("input", atualizarBotao);
+
+  // ── PEDIDOS ──────────────────────────────────────────────────────────────
+  async function carregarPedidos() {
+    try {
+      const res = await fetch(`${API}/pedidos`);
+      const pedidos = await res.json();
+      const el = document.getElementById("pedidos");
+      document.getElementById("contador").textContent = pedidos.length ? `(${pedidos.length})` : "";
+
+      if (!pedidos.length) {
+        el.innerHTML = '<p class="empty">Nenhum pedido ainda.</p>';
+        return;
+      }
+
+      const proximoStatus = { pendente: "preparando", preparando: "pronto", pronto: null };
+      const labelStatus   = { pendente: "preparando", preparando: "pronto" };
+
+      el.innerHTML = pedidos.map(p => {
+        const hora = new Date(p.criado_em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const proximo = proximoStatus[p.status];
+        const btnLabel = labelStatus[p.status];
+        return `
+          <div class="pedido">
+            <div class="pedido-info">
+              <span class="pedido-cliente">👤 ${p.cliente}</span>
+              <span class="pedido-item">🍔 ${p.item_nome}</span>
+              <span class="pedido-hora">🕐 ${hora}</span>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <span class="badge ${p.status}">${p.status}</span>
+              ${proximo ? `<button class="btn-status" onclick="atualizarStatus(${p.id}, '${proximo}')">→ ${btnLabel}</button>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+    } catch (e) {
+      console.error("Erro ao carregar pedidos", e);
+    }
+  }
+
+  async function fazerPedido() {
+    const cliente = document.getElementById("cliente").value.trim();
+    if (!cliente || !itemSelecionado) return;
+
+    const btn = document.getElementById("btn-pedir");
+    btn.disabled = true;
+    btn.textContent = "Enviando...";
+
+    try {
+      await fetch(`${API}/pedidos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cliente, item_id: itemSelecionado.id, item_nome: itemSelecionado.nome }),
+      });
+
+      document.getElementById("cliente").value = "";
+      itemSelecionado = null;
+      document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+      document.getElementById("item-selecionado").textContent = "Clique em um item do cardápio";
+
+      mostrarToast("✅ Pedido feito com sucesso!");
+      await carregarPedidos();
+    } catch (e) {
+      mostrarToast("❌ Erro ao fazer pedido.");
+    } finally {
+      btn.textContent = "Fazer Pedido";
+      atualizarBotao();
+    }
+  }
+
+  async function atualizarStatus(id, status) {
+    await fetch(`${API}/pedidos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    await carregarPedidos();
+  }
+
+  function mostrarToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2500);
+  }
+
+  // Atualiza pedidos a cada 5 segundos automaticamente
+  carregarCardapio();
+  carregarPedidos();
+  setInterval(carregarPedidos, 5000);
+</script>
+
+</body>
+</html>
