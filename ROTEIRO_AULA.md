@@ -14,8 +14,7 @@ lanchonete/
 ├── frontend/
 │   ├── index.html        ← Interface HTML/JS 
 │   └── Dockerfile
-├── docker-compose.yml            ← arquivo final 
-└── docker-compose.TEMPLATE.yml  ← arquivo em branco para preencher ao vivo
+├── docker-compose.yml            ← arquivo em branco para preencher
 ```
 
 ---
