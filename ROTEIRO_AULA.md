@@ -122,7 +122,7 @@ O healthcheck verifica se o banco está realmente pronto para conexões. Isso é
 
 ---
 
-### 5. Preenche o `backend` com a sala (5 min)
+### 5. Preenche o `backend`
 
 ```yaml
 backend:
@@ -168,7 +168,7 @@ Isso garante que o backend só inicie quando o banco estiver realmente pronto pa
 
 ---
 
-### 6. Preenche o `frontend` com a sala
+### 6. Preenche o `frontend`
 
 ```yaml
 frontend:
@@ -244,7 +244,7 @@ Abre o browser de novo — os pedidos ainda estão lá.
 
 ---
 
-## Comandos úteis durante a aula
+## Comandos úteis
 
 ```bash
 # Ver logs em tempo real
