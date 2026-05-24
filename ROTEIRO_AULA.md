@@ -22,7 +22,7 @@ lanchonete/
 
 ## Roteiro da aula
 
-### Contexto do problema
+### 1.Contexto do problema
 
 > "A lanchonete quer digitalizar os pedidos.
 > O cliente acessa o site, vê o cardápio, escolhe o item e faz o pedido.
@@ -32,7 +32,7 @@ Mostra o `index.html` no browser (abrir o arquivo diretamente, sem Docker ainda)
 
 ---
 
-### Problema de subir tudo manualmente
+### 2.Problema de subir tudo manualmente
 
 Mostra nos slides todo esse código que seria necessário rodar manualmente, tanto nós quanto todo mundo que fosse executar, todas as vezes. Se a ordem estiver errada o backend não conecta com o banco:
 
@@ -71,7 +71,7 @@ docker run -d --name frontend --network lanchonete-net \
 
 ---
 
-### Introdução ao Docker Compose
+### 3. Introdução ao Docker Compose
 Agora vamos resolver esse problema com um único arquivo: docker-compose.yml.
 A ideia do Compose é declarar toda a aplicação em um único lugar, descrevendo serviços, redes e volumes de forma estruturada.
 Apresenta o docker-compose.yml em branco para ir preenchendo.
