@@ -31,7 +31,7 @@ Mostra o `index.html` no browser (abrir o arquivo diretamente, sem Docker ainda)
 
 ---
 
-### 2.Problema de subir tudo manualmente
+### 2. Problema de subir tudo manualmente
 
 Mostra nos slides todo esse código que seria necessário rodar manualmente, tanto nós quanto todo mundo que fosse executar, todas as vezes. Se a ordem estiver errada o backend não conecta com o banco:
 
@@ -81,38 +81,32 @@ Pede para todo mundo abrir o `docker-compose.TEMPLATE.yml` no VS Code.
 
 ### 4. Preenche o `db` 
 
+Aqui usamos uma imagem pronta. Não estamos construindo nada, apenas executando uma versão já disponível do Postgres: 
 ```yaml
 db:
   image: postgres:15
 ```
-Aqui usamos uma imagem pronta. Não estamos construindo nada, apenas executando uma versão já disponível do Postgres.
 
+Essas variáveis inicializam o banco automaticamente quando o container é criado:
 ```yaml
   environment:
     - POSTGRES_USER=lanchonete
     - POSTGRES_PASSWORD=senha123
     - POSTGRES_DB=pedidos
 ```
-Explicação:
-Essas variáveis inicializam o banco automaticamente quando o container é criado.
-
-
+O volume garante persistência dos dados. Mesmo que o container seja removido, os dados continuam existindo:
 ```yaml
   volumes:
     - dados_postgres:/var/lib/postgresql/data
 ```
-O volume garante persistência dos dados. Mesmo que o container seja removido, os dados continuam existindo.
 
-
+O healthcheck verifica se o banco está realmente pronto para conexões. Isso é diferente de apenas “o container estar rodando”:
 ```yaml
   healthcheck:
     test: ["CMD-SHELL", "pg_isready -U lanchonete"]
     interval: 5s
     retries: 5
 ```
-O healthcheck verifica se o banco está realmente pronto para conexões. Isso é diferente de apenas “o container estar rodando”.
-
-
 
 **Pergunta:** "Por que isso? O `depends_on` não já garante a ordem?"
 → `depends_on` garante que o *container* iniciou, não que o Postgres está *pronto* para conexões.
@@ -123,45 +117,38 @@ O healthcheck verifica se o banco está realmente pronto para conexões. Isso é
 
 ### 5. Preenche o `backend`
 
+Aqui usamos build porque estamos criando a imagem a partir de um Dockerfile local:
 ```yaml
 backend:
   build: ./backend
 ```
-Explicação:
-Aqui usamos build porque estamos criando a imagem a partir de um Dockerfile local.
 
-
-**Pergunta:** "Qual a diferença entre `build` e `image`?"
+"Qual a diferença entre `build` e `image`?"
 → `image`: usa uma imagem pronta do Docker Hub.
 → `build`: constrói uma imagem local a partir do `Dockerfile`.
 
 
+O formato é sempre HOST:CONTAINER. Isso significa que acessamos o backend pelo navegador em localhost:8080:
 ```yaml
   ports:
     - "8080:8080"
 ```
-Explicação:
-O formato é sempre HOST:CONTAINER. Isso significa que acessamos o backend pelo navegador em localhost:8080.
 
-
+O ponto mais importante aqui é o uso de db como host.
+Dentro do Docker Compose, todos os serviços estão na mesma rede interna, e o nome do serviço funciona como um DNS automático:
 ```yaml
   environment:
     - DATABASE_URL=postgres://lanchonete:senha123@db:5432/pedidos
 ```
-O ponto mais importante aqui é o uso de db como host.
 
-Dentro do Docker Compose, todos os serviços estão na mesma rede interna, e o nome do serviço funciona como um DNS automático.
-
+Isso garante que o backend só inicie quando o banco estiver realmente pronto para receber conexões.
 ```yaml
   depends_on:
     db:
       condition: service_healthy
 ```
 
-Explicação:
-Isso garante que o backend só inicie quando o banco estiver realmente pronto para receber conexões.
-
-**Explica a diferença:** `depends_on: db` vs `depends_on: db: condition: service_healthy`.
+ `depends_on: db` vs `depends_on: db: condition: service_healthy`.
 → Sem `condition`: sobe na ordem certa, mas não espera o banco estar pronto.
 → Com `condition: service_healthy`: só sobe quando o healthcheck do db passar.
 
@@ -169,6 +156,8 @@ Isso garante que o backend só inicie quando o banco estiver realmente pronto pa
 
 ### 6. Preenche o `frontend`
 
+O frontend é servido por um servidor web interno na porta 80. Externamente, acessamos pela porta 3000.
+O depends_on  apenas define ordem de inicialização. O frontend depende do backend estar iniciado, mas não necessariamente pronto:
 ```yaml
 frontend:
   build: ./frontend
@@ -177,31 +166,23 @@ frontend:
   depends_on:
     - backend
 ```
-Explicação:
-O frontend é servido por um servidor web interno na porta 80. Externamente, acessamos pela porta 3000.
-O depends_on  apenas define ordem de inicialização. O frontend depende do backend estar iniciado, mas não necessariamente pronto.
-
 ---
 
 ### 7. Seção `volumes`
 
+Aqui declaramos o volume nomeado. Ele é gerenciado pelo Docker e não depende do ciclo de vida dos containers:
 ```yaml
 volumes:
   dados_postgres:
 ```
-
-Explicação:
-Aqui declaramos o volume nomeado. Ele é gerenciado pelo Docker e não depende do ciclo de vida dos containers.
-
 ---
 
 ### 8. Subindo a aplicação
 
+Esse comando: constrói imagens,cria containers, configura rede automaticamente, sobe todos os serviços: 
 ```bash
 docker compose up --build
 ```
-Esse comando: constrói imagens,cria containers, configura rede automaticamente, sobe todos os serviços
-
 
 ```bash
 docker compose ps
@@ -221,7 +202,7 @@ docker compose up -d
 
 Abre o browser de novo — os pedidos ainda estão lá.
 
-**Pergunta:** "Por que os dados continuam?"
+"Por que os dados continuam?"
 → O volume `dados_postgres` não é removido pelo `down`.
   Só seria removido com `docker compose down -v`.
 
